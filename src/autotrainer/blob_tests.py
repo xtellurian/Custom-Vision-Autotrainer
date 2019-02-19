@@ -6,7 +6,8 @@ from autotrainer.blob.blob_client import BlobClient
 
 conn_string='DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1;'
 block_blob_service = BlockBlobService(connection_string=conn_string)
-test_file = os.path.join( os.path.dirname(os.path.abspath(__file__)), 'sample.jpg')
+test_file_name = 'sample.jpg'
+test_file = os.path.join( os.path.dirname(os.path.abspath(__file__)), test_file_name)
 
 
 class InitBlobTests(unittest.TestCase):
@@ -26,7 +27,7 @@ class InitBlobTests(unittest.TestCase):
 
 class BlobTests(unittest.TestCase):
 
-    parent= str(uuid.uuid4()) + '-test'
+    parent_prefix= str(uuid.uuid4())
     test_container=str(uuid.uuid4()) + '-test'
 
     def setUp(self):
@@ -37,12 +38,21 @@ class BlobTests(unittest.TestCase):
     
     def test_add_training_from_path(self):
         blob_client=BlobClient(block_blob_service)
-        blob_client.add_data_from_path(self.test_container, test_file, self.parent , ['dog'])
+        parent =  self.parent_prefix + '1'
+        blob_client.add_data_from_path(self.test_container, test_file, parent, ['dog'])
 
         blobs = block_blob_service.list_blobs(self.test_container)
         print([c.name for c in blobs.items])
-        self.assertIn(self.parent + '/sample.jpg', [c.name for c in blobs.items])
-        self.assertIn(self.parent + '/sample.jpg.labels', [c.name for c in blobs.items])
+        self.assertIn(parent + '/sample.jpg', [c.name for c in blobs.items])
+        self.assertIn(parent + '/sample.jpg.labels', [c.name for c in blobs.items])
+
+    def test_get_labelled_blob(self):
+        blob_client=BlobClient(block_blob_service)
+        parent = self.parent_prefix + '2' 
+        labels = ['dog', 'cat']
+        blob_client.add_data_from_path(self.test_container, test_file, parent , labels)
+        labelled_blob = blob_client.get_labelled_blob(self.test_container, parent, test_file_name)
+        self.assertEqual(labelled_blob.labels, labels)
 
     if __name__ == '__main__':
         unittest.main()
