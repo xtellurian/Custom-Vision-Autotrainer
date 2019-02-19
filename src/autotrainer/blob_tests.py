@@ -64,6 +64,9 @@ class BlobTests(unittest.TestCase):
         blob_names = blob_client.list_blob_names(self.test_container)
         self.assertIn(parenta + '/' + test_file_name, blob_names)
         self.assertIn(parentb + '/' + test_file_name, blob_names)
+        parent_a_blobs = blob_client.list_blob_names(self.test_container, parenta)
+        self.assertIn(parenta + '/' + test_file_name, parent_a_blobs)
+        self.assertNotIn(parentb + '/' + test_file_name, parent_a_blobs)
 
     if __name__ == '__main__':
         unittest.main()
