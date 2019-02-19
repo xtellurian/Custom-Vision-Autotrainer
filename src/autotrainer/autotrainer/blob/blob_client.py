@@ -74,8 +74,8 @@ class BlobClient:
         
         self.blob_service.create_blob_from_text(container_name, labels_full_name, text.strip())
 
-    def list_file_names(self):
-        return []
+    def list_blob_names(self, container_name: str, parent: str = None) -> [str]:
+        return self.blob_service.list_blob_names(container_name, parent).items
 
     def get_labelled_blob(self, container_name: str, parent: str, file_name: str, expiry_hours: int = 1)-> LabelledBlob :
         """

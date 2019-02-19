@@ -54,5 +54,16 @@ class BlobTests(unittest.TestCase):
         labelled_blob = blob_client.get_labelled_blob(self.test_container, parent, test_file_name)
         self.assertEqual(labelled_blob.labels, labels)
 
+    def test_list_blob_names(self):
+        blob_client=BlobClient(block_blob_service)
+        parenta = self.parent_prefix + '3a' 
+        parentb = self.parent_prefix + '3b' 
+        labels = ['dog', 'cat']
+        blob_client.add_data_from_path(self.test_container, test_file, parenta , labels)
+        blob_client.add_data_from_path(self.test_container, test_file, parentb , labels)
+        blob_names = blob_client.list_blob_names(self.test_container)
+        self.assertIn(parenta + '/' + test_file_name, blob_names)
+        self.assertIn(parentb + '/' + test_file_name, blob_names)
+
     if __name__ == '__main__':
         unittest.main()
