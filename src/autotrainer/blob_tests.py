@@ -1,6 +1,7 @@
 import os
 import uuid
 import unittest
+import requests
 from azure.storage.blob import BlockBlobService
 from autotrainer.blob.blob_client import BlobClient
 
@@ -67,6 +68,22 @@ class BlobTests(unittest.TestCase):
         parent_a_blobs = blob_client.list_blob_names(self.test_container, parenta)
         self.assertIn(parenta + '/' + test_file_name, parent_a_blobs)
         self.assertNotIn(parentb + '/' + test_file_name, parent_a_blobs)
+
+    def test_download_url(self):
+        blob_client=BlobClient(block_blob_service)
+        parent = self.parent_prefix + '4' 
+        labels = ['dog']
+        blob_client.add_data_from_path(self.test_container, test_file, parent , labels)
+        labelled_blob = blob_client.get_labelled_blob(self.test_container, parent, test_file_name)
+
+        response = requests.get(labelled_blob.download_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.content)
+        self.assertTrue(len(response.content) > 0)
+        with open(test_file, mode='rb') as file: # b is important -> binary
+            fileContent = file.read()
+            self.assertEqual(fileContent, response.content)
+
 
     if __name__ == '__main__':
         unittest.main()
