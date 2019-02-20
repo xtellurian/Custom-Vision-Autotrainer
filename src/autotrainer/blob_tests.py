@@ -4,6 +4,7 @@ import unittest
 import requests
 from azure.storage.blob import BlockBlobService
 from autotrainer.blob.blob_client import BlobClient
+from autotrainer.blob.models.container import Container
 
 conn_string='DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1;'
 block_blob_service = BlockBlobService(connection_string=conn_string)
@@ -16,15 +17,16 @@ class InitBlobTests(unittest.TestCase):
     def tearDown(self):
         containers = block_blob_service.list_containers()
         for c in containers.items:
-            block_blob_service.delete_container(c.name)
+            print('deleting container ' + c.name)
+            # block_blob_service.delete_container(c.name)
 
     def test_initialise_containers(self):
         blob_client=BlobClient(block_blob_service)
         blob_client.initialise_containers()
 
         containers = block_blob_service.list_containers()
-        for n in blob_client.container_names:
-            self.assertIn(n, [ c.name for c in containers.items])
+        for n in Container:
+            self.assertIn(n.name, [ c.name for c in containers.items])
 
 class BlobTests(unittest.TestCase):
 
