@@ -32,3 +32,5 @@ class CustomVisionClient:
             image_url_create_list.append( ImageUrlCreateEntry(url=labelled_blob.download_url, tag_ids=tag_ids ))
         return image_url_create_list
 
+    def add_images_to_project(self, project: Project, image_url_create_entries: [ImageUrlCreateEntry]):
+        self.training_client.create_images_from_urls(project.id, image_url_create_entries)
