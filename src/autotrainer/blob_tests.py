@@ -99,8 +99,3 @@ class BlobTests(unittest.TestCase):
         self.assertIn(dog_label, all_labels)
         self.assertIn(cat_label, all_labels)
         self.assertIn(dogs_and_cats_label, all_labels)
-
-
-
-    if __name__ == '__main__':
-        unittest.main()
