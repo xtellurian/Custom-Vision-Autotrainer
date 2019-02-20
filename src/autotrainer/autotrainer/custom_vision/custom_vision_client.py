@@ -1,10 +1,10 @@
-
 from azure.cognitiveservices.vision.customvision.training import CustomVisionTrainingClient
-from azure.cognitiveservices.vision.customvision.training.models import Project, ImageUrlCreateEntry, Tag
+from azure.cognitiveservices.vision.customvision.training.models import Project, Iteration, ImageUrlCreateEntry, Tag
 
 from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
 from autotrainer.custom_vision.labeller import Labeller
+from autotrainer.custom_vision.trainer import Trainer
 
 from autotrainer.blob.blob_client import LabelledBlob
 
@@ -34,3 +34,7 @@ class CustomVisionClient:
 
     def add_images_to_project(self, project: Project, image_url_create_entries: [ImageUrlCreateEntry]):
         self.training_client.create_images_from_urls(project.id, image_url_create_entries)
+
+    def train_project_and_wait(self, project: Project) -> Iteration:
+        trainer = Trainer(self.training_client)
+        return trainer.train_and_wait(project)
