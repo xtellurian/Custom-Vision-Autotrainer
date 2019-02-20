@@ -2,7 +2,7 @@
 from azure.cognitiveservices.vision.customvision.training import CustomVisionTrainingClient
 from azure.cognitiveservices.vision.customvision.training.models import Project, ImageUrlCreateEntry, Tag
 
-from autotrainer.custom_vision.domains import Domain
+from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
 from autotrainer.custom_vision.labeller import Labeller
 
