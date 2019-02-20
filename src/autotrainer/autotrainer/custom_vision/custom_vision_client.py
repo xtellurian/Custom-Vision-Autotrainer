@@ -6,6 +6,7 @@ from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
 from autotrainer.custom_vision.labeller import Labeller
 from autotrainer.custom_vision.trainer import Trainer
+from autotrainer.custom_vision.balancer import Balancer
 
 from autotrainer.blob.blob_client import LabelledBlob
 
@@ -46,7 +47,11 @@ class CustomVisionClient:
             print('Uploaded {} images from: {} to: {} of: {}'.format(len(subset), start, end, len(image_url_create_entries)))
             images.extend(image_create_summary.images)
 
-        return 
+        return images
+    
+    def balance_images(self, images: [ImageUrlCreateEntry]):
+        balancer = Balancer(images)
+        return balancer.apply()
 
     def train_project_and_wait(self, project: Project) -> Iteration:
         trainer = Trainer(self.training_client)

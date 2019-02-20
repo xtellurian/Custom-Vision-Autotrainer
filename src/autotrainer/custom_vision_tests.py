@@ -7,7 +7,7 @@ from azure.cognitiveservices.vision.customvision.training.models import Project,
 from autotrainer.blob.blob_client import LabelledBlob
 
 from autotrainer.custom_vision.custom_vision_client import CustomVisionClient
-from autotrainer.custom_vision.domains import Domain
+from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
 
 CVTK=os.environ['CUSTOMVISIONTRAININGKEY']

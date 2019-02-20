@@ -4,7 +4,7 @@ import unittest
 from azure.cognitiveservices.vision.customvision.training.models import ImageUrlCreateEntry
 
 from autotrainer.custom_vision.custom_vision_client import CustomVisionClient
-from autotrainer.custom_vision.domains import Domain
+from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
 
 from autotrainer.custom_vision.balancer import Balancer
