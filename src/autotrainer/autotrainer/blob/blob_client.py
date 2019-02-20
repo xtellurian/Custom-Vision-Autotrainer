@@ -5,17 +5,22 @@ from azure.storage.blob import (
     BlockBlobService,
     BlobPermissions
 )
+from azure.storage.blob.models import Blob
 
 # Helper methods
-def join_parent_and_file_name(parent:str, file_name: str):
+def join_parent_and_file_name(parent:str, file_name: str)-> str:
     if not parent.endswith('/'):
         parent = parent + '/'
     return parent + file_name
 
-def join_parent_and_file_name_labels(parent:str, file_name: str):
+def join_blob_name_for_labels(blob_name: str) -> str:
+    return blob_name + '.labels'
+
+def join_parent_and_file_name_labels(parent:str, file_name: str)-> str:
     if not parent.endswith('/'):
         parent = parent + '/'
-    return parent + file_name + '.labels'
+    return join_blob_name_for_labels(parent + file_name)
+    
 
 # model class
 
@@ -77,7 +82,7 @@ class BlobClient:
     def list_blob_names(self, container_name: str, parent: str = None) -> [str]:
         return self.blob_service.list_blob_names(container_name, parent).items
 
-    def get_labelled_blob(self, container_name: str, parent: str, file_name: str, expiry_hours: int = 1)-> LabelledBlob :
+    def get_labelled_blob_from_parent(self, container_name: str, parent: str, file_name: str, expiry_hours: int = 1)-> LabelledBlob :
         """
         Returns an object with a download url and labels array
         :param container_name: One of the container_names
@@ -89,17 +94,41 @@ class BlobClient:
         :param expiry_hours: How long the SAS token will last for
         :type: int
         """
-        full_name = join_parent_and_file_name(parent, file_name)
-        print(full_name)
-        labels_full_name = join_parent_and_file_name_labels(parent, file_name)
+        blob_name = join_parent_and_file_name(parent, file_name)
+        return self.get_labelled_blob(container_name, blob_name, expiry_hours)
+
+    def get_labelled_blob(self, container_name: str, blob_name: str, expiry_hours: int = 1):
+        labels_full_name = join_blob_name_for_labels(blob_name)
         labels_blob = self.blob_service.get_blob_to_text(container_name, labels_full_name)
         labels = labels_blob.content.split('\n')
         sas = self.blob_service.generate_blob_shared_access_signature( 
-            container_name, full_name, 
+            container_name, blob_name, 
             permission=BlobPermissions.READ,
             expiry=datetime.utcnow() + timedelta(hours=expiry_hours))
 
-        url = self.blob_service.make_blob_url(container_name, full_name, sas_token=sas)
+        url = self.blob_service.make_blob_url(container_name, blob_name, sas_token=sas)
         res = LabelledBlob(url, labels)
         return res
+
+    def to_labelled_blob(self, container_name:str, blob: Blob ):
+        if blob.name.endswith('.labels'):
+            raise ValueError('Cannot convert a .labels file to a LabelledBlob')
+        return self.get_labelled_blob(container_name, blob.name)
+
+
+    def list_all_labelled_blobs(self, container_name: str, expiry_hours:int = 1) -> [LabelledBlob]:
+        """
+        Returns an list of LabelledBlobs, each with a download url and labels array
+        :param container_name: One of the container_names
+        :type: str
+        :param expiry_hours: How long the SAS token will last for
+        :type: int
+        """
+        blobs = self.blob_service.list_blobs(container_name)
+        res = []
+        for blob in blobs:
+            if not blob.name.endswith('.labels'):
+                res.append(self.to_labelled_blob(container_name, blob))
+        return res
+
 

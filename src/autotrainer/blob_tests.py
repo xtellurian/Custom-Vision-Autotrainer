@@ -52,7 +52,7 @@ class BlobTests(unittest.TestCase):
         parent = self.parent_prefix + '2' 
         labels = ['dog', 'cat']
         blob_client.add_data_from_path(self.test_container, test_file, parent , labels)
-        labelled_blob = blob_client.get_labelled_blob(self.test_container, parent, test_file_name)
+        labelled_blob = blob_client.get_labelled_blob_from_parent(self.test_container, parent, test_file_name)
         self.assertEqual(labelled_blob.labels, labels)
 
     def test_list_blob_names(self):
@@ -74,7 +74,7 @@ class BlobTests(unittest.TestCase):
         parent = self.parent_prefix + '4' 
         labels = ['dog']
         blob_client.add_data_from_path(self.test_container, test_file, parent , labels)
-        labelled_blob = blob_client.get_labelled_blob(self.test_container, parent, test_file_name)
+        labelled_blob = blob_client.get_labelled_blob_from_parent(self.test_container, parent, test_file_name)
 
         response = requests.get(labelled_blob.download_url)
         self.assertEqual(response.status_code, 200)
@@ -83,6 +83,23 @@ class BlobTests(unittest.TestCase):
         with open(test_file, mode='rb') as file: # b is important -> binary
             fileContent = file.read()
             self.assertEqual(fileContent, response.content)
+
+    def test_list_all_labelled_blobs(self):
+        blob_client=BlobClient(block_blob_service)
+        parent = self.parent_prefix + '5' 
+        dog_label = ['dog']
+        cat_label = ['cat']
+        dogs_and_cats_label = ['dog','cat']
+        blob_client.add_data_from_path(self.test_container, test_file, parent + 'dog' , dog_label)
+        blob_client.add_data_from_path(self.test_container, test_file, parent + 'cat' , cat_label)
+        blob_client.add_data_from_path(self.test_container, test_file, parent + 'dogandcat' , dogs_and_cats_label)
+
+        all_labelled_blobs = blob_client.list_all_labelled_blobs(self.test_container)
+        all_labels = [s.labels for s in all_labelled_blobs]
+        self.assertIn(dog_label, all_labels)
+        self.assertIn(cat_label, all_labels)
+        self.assertIn(dogs_and_cats_label, all_labels)
+
 
 
     if __name__ == '__main__':
