@@ -6,38 +6,33 @@ from azure.storage.blob import (
     BlobPermissions
 )
 from azure.storage.blob.models import Blob
+from autotrainer.blob.models.labelled_blob import LabelledBlob
+from autotrainer.blob.models.container import Container
 
 # Helper methods
 def join_parent_and_file_name(parent:str, file_name: str)-> str:
-    if not parent.endswith('/'):
-        parent = parent + '/'
-    return parent + file_name
+    if parent:
+        if not parent.endswith('/'):
+            parent = parent + '/'
+        return parent + file_name
+    else:
+        return file_name
 
 def join_blob_name_for_labels(blob_name: str) -> str:
     return blob_name + '.labels'
 
 def join_parent_and_file_name_labels(parent:str, file_name: str)-> str:
-    if not parent.endswith('/'):
-        parent = parent + '/'
-    return join_blob_name_for_labels(parent + file_name)
+    if parent:
+        if not parent.endswith('/'):
+            parent = parent + '/'
+        return join_blob_name_for_labels(parent + file_name)
+    else:
+        return join_blob_name_for_labels(file_name)
     
-
-# model class
-
-class LabelledBlob:
-    download_url: str
-    labels: [str]
-
-    def __init__(self, download_url: str, labels: [str]):
-        self.download_url = download_url
-        self.labels = labels
-
-
 # main blob client class
 
 class BlobClient:
     blob_service: BlockBlobService
-    container_names = ['train', 'test', 'holdout']
 
     def __init__(self, blob_service: BlockBlobService):
         """
@@ -50,10 +45,11 @@ class BlobClient:
         """
         Creates the containers required in the storage account
         """
-        for name in self.container_names:
-            self.blob_service.create_container(name)
+        for c in Container:
+            print('creating ' + c.name)
+            self.blob_service.create_container(c.name)
 
-    def add_data_from_path(self, container_name: str, file_path: str, parent: str = None, labels: [str] = []):
+    def add_data_from_path(self, container_name: str, file_path: str, labels: [str] = [], parent: str = None):
         """
         Creates a new file in blob storage
         :param container_name: One of self.container_names
@@ -66,10 +62,7 @@ class BlobClient:
         :type: [str]
         """
         filename=os.path.basename(file_path)
-        if parent is None:
-            parent = str(uuid.uuid4())
-        if not parent.endswith('/'):
-            parent = parent + '/'
+
         full_name = join_parent_and_file_name(parent, filename)
         labels_full_name = join_parent_and_file_name_labels(parent, filename)
         self.blob_service.create_blob_from_path(container_name, full_name, file_path )
@@ -97,7 +90,7 @@ class BlobClient:
         blob_name = join_parent_and_file_name(parent, file_name)
         return self.get_labelled_blob(container_name, blob_name, expiry_hours)
 
-    def get_labelled_blob(self, container_name: str, blob_name: str, expiry_hours: int = 1):
+    def get_labelled_blob(self, container_name: str, blob_name: str, expiry_hours: int = 1)->LabelledBlob:
         labels_full_name = join_blob_name_for_labels(blob_name)
         labels_blob = self.blob_service.get_blob_to_text(container_name, labels_full_name)
         labels = labels_blob.content.split('\n')
@@ -131,4 +124,10 @@ class BlobClient:
                 res.append(self.to_labelled_blob(container_name, blob))
         return res
 
+def create_blob_client(account_name:str, key: str)-> BlobClient:
+    blockblocksvc = BlockBlobService(account_name, key)
+    return BlobClient(blockblocksvc)
 
+def create_blob_client_from_connection_string(conn_string: str):
+    blockblocksvc = BlockBlobService(connection_string=conn_string)
+    return BlobClient(blockblocksvc)

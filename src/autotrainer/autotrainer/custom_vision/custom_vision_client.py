@@ -1,5 +1,6 @@
+import math
 from azure.cognitiveservices.vision.customvision.training import CustomVisionTrainingClient
-from azure.cognitiveservices.vision.customvision.training.models import Project, Iteration, ImageUrlCreateEntry, Tag
+from azure.cognitiveservices.vision.customvision.training.models import Project, Iteration, ImageUrlCreateEntry, Tag, ImageCreateResult
 
 from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
@@ -32,9 +33,25 @@ class CustomVisionClient:
             image_url_create_list.append( ImageUrlCreateEntry(url=labelled_blob.download_url, tag_ids=tag_ids ))
         return image_url_create_list
 
-    def add_images_to_project(self, project: Project, image_url_create_entries: [ImageUrlCreateEntry]):
-        self.training_client.create_images_from_urls(project.id, image_url_create_entries)
+    def add_images_to_project(self, project: Project, image_url_create_entries: [ImageUrlCreateEntry])-> [ImageCreateResult]:
+
+        batch = 64
+        num_ops_required = math.ceil(len(image_url_create_entries) / batch) # just going to assume that 64 images won't have more than 20 tags
+        images = []
+        for x in range(num_ops_required):
+            start = x * batch
+            end = min(start + batch, len(image_url_create_entries)) # either the batch or the end of the list
+            subset = image_url_create_entries[start:end]
+            image_create_summary = self.training_client.create_images_from_urls(project.id, subset)
+            print('Uploaded {} images from: {} to: {} of: {}'.format(len(subset), start, end, len(image_url_create_entries)))
+            images.extend(image_create_summary.images)
+
+        return 
 
     def train_project_and_wait(self, project: Project) -> Iteration:
         trainer = Trainer(self.training_client)
         return trainer.train_and_wait(project)
+
+def create_cv_client(endpoint: str, key: str)-> CustomVisionClient:
+    trainer = CustomVisionTrainingClient(key, endpoint)
+    return CustomVisionClient(trainer)

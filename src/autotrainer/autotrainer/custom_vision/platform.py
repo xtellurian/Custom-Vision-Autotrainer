@@ -18,3 +18,21 @@ class Platform(Enum):
             return "ONNX"
         else:
             return None
+
+class Flavour(Enum):
+    Linux = 1
+    Windows = 2
+    ONNX10 = 3
+    ONNX12 = 4
+
+    def to_id(self):
+        if self.value == Flavour.Linux:
+            return "Linux"
+        if self.value == Flavour.Windows:
+            return "Windows"
+        if self.value == Flavour.ONNX10 :
+            return "ONNX10"
+        if(self.value == Flavour.ONNX12):
+            return "ONNX12"
+        else:
+            return None
