@@ -2,7 +2,7 @@ import math
 from azure.cognitiveservices.vision.customvision.training import CustomVisionTrainingClient
 from azure.cognitiveservices.vision.customvision.training.models import Project, Iteration, ImageUrlCreateEntry, Tag, ImageCreateResult
 
-from autotrainer.custom_vision.domain import Domain
+from autotrainer.custom_vision.domain import Domain, to_domain_id
 from autotrainer.custom_vision.classification_type import ClassificationType
 from autotrainer.custom_vision.labeller import Labeller
 from autotrainer.custom_vision.trainer import Trainer
@@ -17,11 +17,14 @@ class CustomVisionClient:
         self.training_client = training_client
 
     def create_project(self, name: str, desc: str, domain: Domain, classification_type: ClassificationType)-> Project :
+        domain_id = to_domain_id(domain)
+        print(domain)
+        print('domain id from to_domain_id : {}'.format(domain_id))
         project = self.training_client.create_project(
             name, 
             description=desc, 
-            domain_id=domain.to_id(),
-            classification_type=classification_type.to_id())
+            domain_id= domain_id,
+            classification_type=classification_type.value)
         return project
 
     def create_image_url_list(self, project: Project, labelled_blobs: [LabelledBlob])-> [ImageUrlCreateEntry]:

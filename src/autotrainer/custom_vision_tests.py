@@ -7,7 +7,7 @@ from azure.cognitiveservices.vision.customvision.training.models import Project,
 from autotrainer.blob.blob_client import LabelledBlob
 
 from autotrainer.custom_vision.custom_vision_client import CustomVisionClient
-from autotrainer.custom_vision.domain import Domain
+from autotrainer.custom_vision.domain import Domain, to_domain_id
 from autotrainer.custom_vision.classification_type import ClassificationType
 
 CVTK=os.environ['CUSTOMVISIONTRAININGKEY']
@@ -26,7 +26,20 @@ class CustomVisionTests(unittest.TestCase):
         project = client.create_project('test', 'test', Domain.GENERAL_CLASSIFICATION, ClassificationType.MULTICLASS)
         self.assertIsNotNone(project)
         self.assertIsInstance(project, Project)
-        self.assertEqual(project.name, 'test')
+        self.assertIn('test', project.name)
+        projects = training_client.get_projects()
+        self.assertIn(project, projects)
+        training_client.delete_project(project.id)
+
+    def test_create_project_compact_multilabel(self):
+        client = CustomVisionClient(training_client)
+        project = client.create_project('test', 'test', Domain.GENERAL_CLASSIFICATION_COMPACT, ClassificationType.MULTILABEL)
+        self.assertIsNotNone(project)
+        self.assertIsInstance(project, Project)
+        self.assertIn('test', project.name)
+        self.assertEqual(project.settings.domain_id, to_domain_id(Domain.GENERAL_CLASSIFICATION_COMPACT) )
+        self.assertEqual(project.settings.classification_type, ClassificationType.MULTILABEL.value )
+        
         projects = training_client.get_projects()
         self.assertIn(project, projects)
         training_client.delete_project(project.id)
