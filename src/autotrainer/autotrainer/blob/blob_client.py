@@ -49,7 +49,7 @@ class BlobClient:
             print('creating ' + c.value)
             self.blob_service.create_container(c.value)
 
-    def add_data_from_path(self, container_name: str, file_path: str, labels: [str] = [], parent: str = None):
+    def add_data_from_path(self, container_name: str, file_path: str, labels: [str] = [], parent: str = None)->LabelledBlob:
         """
         Creates a new file in blob storage
         :param container_name: One of self.container_names
@@ -63,14 +63,15 @@ class BlobClient:
         """
         filename=os.path.basename(file_path)
 
-        full_name = join_parent_and_file_name(parent, filename)
+        blob_name = join_parent_and_file_name(parent, filename)
         labels_full_name = join_parent_and_file_name_labels(parent, filename)
-        self.blob_service.create_blob_from_path(container_name, full_name, file_path )
+        self.blob_service.create_blob_from_path(container_name, blob_name, file_path )
         text=''
         for label in labels:
             text+=label + '\n'
         
         self.blob_service.create_blob_from_text(container_name, labels_full_name, text.strip())
+        return self.get_labelled_blob(container_name, blob_name)
 
     def list_blob_names(self, container_name: str, parent: str = None) -> [str]:
         return self.blob_service.list_blob_names(container_name, parent).items
@@ -124,6 +125,7 @@ class BlobClient:
                 res.append(self.to_labelled_blob(container_name, blob))
         return res
 
+# factory methods
 def create_blob_client(account_name:str, key: str)-> BlobClient:
     blockblocksvc = BlockBlobService(account_name, key)
     return BlobClient(blockblocksvc)

@@ -2,6 +2,7 @@
 from autotrainer.custom_vision.custom_vision_client import CustomVisionClient, create_cv_client
 from autotrainer.blob.blob_client import BlobClient, create_blob_client_from_connection_string
 from autotrainer.blob.models.container import Container
+from autotrainer.blob.models.labelled_blob import LabelledBlob
 from autotrainer.local.file_loader import list_paths
 
 class Autotrainer:
@@ -15,9 +16,11 @@ class Autotrainer:
     def get_file_paths(self, directory_path: str, ext: str = '')->[str]:
         return list_paths(directory_path, ext)
 
-    def upload_images(self, container: Container, image_paths: [str], labels: [str], parent: str = None):
+    def upload_images(self, container: Container, image_paths: [str], labels: [str], parent: str = None)-> [LabelledBlob]:
+        labelled_blobs = []
         for path in image_paths:
-            self.blob.add_data_from_path(container.value, path, labels, parent )
+            labelled_blobs.append(self.blob.add_data_from_path(container.value, path, labels, parent ))
+        return labelled_blobs
 
     def add_all_images_to_cv(self, container: Container, projectId: str):
         labelled_blobs = self.blob.list_all_labelled_blobs(container.value)
