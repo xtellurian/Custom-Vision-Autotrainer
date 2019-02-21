@@ -7,6 +7,7 @@ from autotrainer.autotrainer import Autotrainer
 from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
 from autotrainer.custom_vision.platform import Platform, Flavour
+from autotrainer.blob.models.container import Container
 
 class AutotrainerCli:
     cv_key: str
@@ -15,8 +16,8 @@ class AutotrainerCli:
     autotrainer: Autotrainer
     def __init__(self):
         parser = argparse.ArgumentParser(
-            description='Pretends to be git',
-            usage='something')
+            description='Autotrainer tools',
+            usage='autotrainer [cv, upload] <options>')
 
         parser.add_argument('command', help='Subcommand to run')
         # parse_args defaults to [1:] for args, but you need to
@@ -74,22 +75,20 @@ class AutotrainerCli:
         else:
             print('Incorrect syntax')
 
-    def blob(self):
+    def upload(self):
         # define the CLI args
-        parser = argparse.ArgumentParser(description='Train a custom vison model')
-        parser.add_argument('cv_projectId', help='Custom Vision project id')
-
+        parser = argparse.ArgumentParser(description='Data tools')
+        parser.add_argument('-d', '--directory', required=True, help='The local directory containing the images')
+        parser.add_argument('-c','--container', type=Container, choices=list(Container), default=Container.train, required=True)
+        parser.add_argument('-l', '--labels', action='append', help='Label for the image', required=True)
+        parser.add_argument('--extension', help='Filter on file extension', default='')
+        parser.add_argument('--parent', help='Parent directory in Blob Storage', default=None)
         # parser.add_argument('--tagStrategy', help='How to tag, eg: article, segment, or segment/article')
         # parser.add_argument('--segmentId', nargs='?', help='Only get images from this segment') # optional
 
-        args = parser.parse_args()
-
-        autotrainer = Autotrainer(args.cv_key, args.cv_endpoint, args.connection_string )
-
-        storage_info = autotrainer.blob.blob_service.get_blob_account_information()
-        print(storage_info)
-        cv_projects=autotrainer.custom_vision.training_client.get_projects()
-        print(cv_projects)
+        args = parser.parse_args(sys.argv[2:])
+        image_paths = self.autotrainer.get_file_paths(args.directory, args.extension)
+        self.autotrainer.upload_images(args.container, image_paths, args.labels, args.parent )
 
 
 
