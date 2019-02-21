@@ -110,19 +110,21 @@ class BlobClient:
         return self.get_labelled_blob(container_name, blob.name)
 
 
-    def list_all_labelled_blobs(self, container_name: str, expiry_hours:int = 1) -> [LabelledBlob]:
+    def list_all_labelled_blobs(self, container_name: str, num_results: int, expiry_hours:int = 1) -> [LabelledBlob]:
         """
         Returns an list of LabelledBlobs, each with a download url and labels array
         :param container_name: One of the container_names
         :type: str
+        :param num_results: How many to return. 
+        :type: int
         :param expiry_hours: How long the SAS token will last for
         :type: int
         """
-        blobs = self.blob_service.list_blobs(container_name)
+        blobs = self.blob_service.list_blobs(container_name, num_results= num_results * 2) # don't bother getting more than double the max
+        blobs = [blob for blob in blobs if not blob.name.endswith('.labels')] # remove labels
         res = []
         for blob in blobs:
-            if not blob.name.endswith('.labels'):
-                res.append(self.to_labelled_blob(container_name, blob))
+            res.append(self.to_labelled_blob(container_name, blob))
         return res
 
 # factory methods

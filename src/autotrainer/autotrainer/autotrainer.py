@@ -1,4 +1,4 @@
-
+from azure.cognitiveservices.vision.customvision.training.models import ImageCreateResult
 from autotrainer.custom_vision.custom_vision_client import CustomVisionClient, create_cv_client
 from autotrainer.blob.blob_client import BlobClient, create_blob_client_from_connection_string
 from autotrainer.blob.models.container import Container
@@ -22,10 +22,10 @@ class Autotrainer:
             labelled_blobs.append(self.blob.add_data_from_path(container.value, path, labels, parent ))
         return labelled_blobs
 
-    def add_all_images_to_cv(self, container: Container, projectId: str):
-        labelled_blobs = self.blob.list_all_labelled_blobs(container.value)
+    def add_all_images_to_cv(self, container: Container, projectId: str, num_results: int)->[ImageCreateResult]:
+        labelled_blobs = self.blob.list_all_labelled_blobs(container.value, num_results)
         project = self.custom_vision.training_client.get_project(projectId)
         images = self.custom_vision.create_image_url_list(project, labelled_blobs)
         images = self.custom_vision.balance_images(images)
-        self.custom_vision.add_images_to_project(project, images )
-        # todo
+        return self.custom_vision.add_images_to_project(project, images )
+        # todo - save ids back to the blob storage

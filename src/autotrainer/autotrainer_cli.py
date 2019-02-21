@@ -2,6 +2,7 @@ import os
 import argparse
 import sys
 import time
+from collections import Counter
 
 from autotrainer.autotrainer import Autotrainer
 from autotrainer.custom_vision.domain import Domain
@@ -17,7 +18,7 @@ class AutotrainerCli:
     def __init__(self):
         parser = argparse.ArgumentParser(
             description='Autotrainer tools',
-            usage='autotrainer [cv, upload] <options>')
+            usage='autotrainer [cv, upload, select] <options>')
 
         parser.add_argument('command', help='Subcommand to run')
         # parse_args defaults to [1:] for args, but you need to
@@ -80,16 +81,29 @@ class AutotrainerCli:
         parser = argparse.ArgumentParser(description='Data tools')
         parser.add_argument('-d', '--directory', required=True, help='The local directory containing the images')
         parser.add_argument('-c','--container', type=Container, choices=list(Container), default=Container.train, required=True)
-        parser.add_argument('-l', '--labels', action='append', help='Label for the image', required=True)
+        parser.add_argument('-l', '--labels', action='append', help='Label for the image', required=True) # can set multiple
         parser.add_argument('--extension', help='Filter on file extension', default='')
         parser.add_argument('--parent', help='Parent directory in Blob Storage', default=None)
-        # parser.add_argument('--tagStrategy', help='How to tag, eg: article, segment, or segment/article')
-        # parser.add_argument('--segmentId', nargs='?', help='Only get images from this segment') # optional
-
         args = parser.parse_args(sys.argv[2:])
+
         image_paths = self.autotrainer.get_file_paths(args.directory, args.extension)
         labelled_blobs = self.autotrainer.upload_images(args.container, image_paths, args.labels, args.parent )
         print('Created {} labelled blobs'.format(len(labelled_blobs)))
+        
+    def select(self):
+        # define the CLI args
+        parser = argparse.ArgumentParser(description='Select data from blobs and add to Custom Vision')
+        parser.add_argument('-c','--container', type=Container, choices=list(Container), default=Container.train)
+        parser.add_argument('--num', type=int, help='Number to add', required=True)
+        parser.add_argument('--project', help='Id of the custom vision project', required=True)
+        args = parser.parse_args(sys.argv[2:])
+
+        res = self.autotrainer.add_all_images_to_cv(args.container, args.project, args.num )
+
+        res_freq = Counter([i.status for i in res])
+        print('{} image create results'.format(len(res)))
+        print(res_freq)
+
 
 
 
