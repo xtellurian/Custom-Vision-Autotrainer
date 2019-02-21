@@ -42,7 +42,7 @@ class BlobTests(unittest.TestCase):
     def test_add_training_from_path(self):
         blob_client=BlobClient(block_blob_service)
         parent =  self.parent_prefix + '1'
-        blob_client.add_data_from_path(self.test_container, test_file, parent, ['dog'])
+        blob_client.add_data_from_path(self.test_container, test_file, ['dog'], parent)
 
         blobs = block_blob_service.list_blobs(self.test_container)
         print([c.name for c in blobs.items])
@@ -53,7 +53,7 @@ class BlobTests(unittest.TestCase):
         blob_client=BlobClient(block_blob_service)
         parent = self.parent_prefix + '2' 
         labels = ['dog', 'cat']
-        blob_client.add_data_from_path(self.test_container, test_file, parent , labels)
+        blob_client.add_data_from_path(self.test_container, test_file, labels, parent)
         labelled_blob = blob_client.get_labelled_blob_from_parent(self.test_container, parent, test_file_name)
         self.assertEqual(labelled_blob.labels, labels)
 
@@ -62,8 +62,8 @@ class BlobTests(unittest.TestCase):
         parenta = self.parent_prefix + '3a' 
         parentb = self.parent_prefix + '3b' 
         labels = ['dog', 'cat']
-        blob_client.add_data_from_path(self.test_container, test_file, parenta , labels)
-        blob_client.add_data_from_path(self.test_container, test_file, parentb , labels)
+        blob_client.add_data_from_path(self.test_container, test_file, labels, parenta )
+        blob_client.add_data_from_path(self.test_container, test_file, labels, parentb )
         blob_names = blob_client.list_blob_names(self.test_container)
         self.assertIn(parenta + '/' + test_file_name, blob_names)
         self.assertIn(parentb + '/' + test_file_name, blob_names)
@@ -75,7 +75,7 @@ class BlobTests(unittest.TestCase):
         blob_client=BlobClient(block_blob_service)
         parent = self.parent_prefix + '4' 
         labels = ['dog']
-        blob_client.add_data_from_path(self.test_container, test_file, parent , labels)
+        blob_client.add_data_from_path(self.test_container, test_file, labels, parent)
         labelled_blob = blob_client.get_labelled_blob_from_parent(self.test_container, parent, test_file_name)
 
         response = requests.get(labelled_blob.download_url)
@@ -92,11 +92,11 @@ class BlobTests(unittest.TestCase):
         dog_label = ['dog']
         cat_label = ['cat']
         dogs_and_cats_label = ['dog','cat']
-        blob_client.add_data_from_path(self.test_container, test_file, parent + 'dog' , dog_label)
-        blob_client.add_data_from_path(self.test_container, test_file, parent + 'cat' , cat_label)
-        blob_client.add_data_from_path(self.test_container, test_file, parent + 'dogandcat' , dogs_and_cats_label)
+        blob_client.add_data_from_path(self.test_container, test_file, dog_label, parent + 'dog' )
+        blob_client.add_data_from_path(self.test_container, test_file, cat_label, parent + 'cat' )
+        blob_client.add_data_from_path(self.test_container, test_file, dogs_and_cats_label, parent + 'dogandcat')
 
-        all_labelled_blobs = blob_client.list_all_labelled_blobs(self.test_container)
+        all_labelled_blobs = blob_client.list_all_labelled_blobs(self.test_container, None)
         all_labels = [s.labels for s in all_labelled_blobs]
         self.assertIn(dog_label, all_labels)
         self.assertIn(cat_label, all_labels)

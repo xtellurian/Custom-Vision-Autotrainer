@@ -38,4 +38,4 @@ class AutotrainerTests(unittest.TestCase):
         for path in image_paths:
             self.autotrainer.blob.add_data_from_path(Container.test.value, path, ['banana'])
         
-        self.autotrainer.add_all_images_to_cv(Container.test.value, project.id)
+        self.autotrainer.add_all_images_to_cv(Container.test, project.id)

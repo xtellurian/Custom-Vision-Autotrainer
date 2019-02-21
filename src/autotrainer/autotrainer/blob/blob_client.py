@@ -62,7 +62,6 @@ class BlobClient:
         :type: [str]
         """
         filename=os.path.basename(file_path)
-
         blob_name = join_parent_and_file_name(parent, filename)
         labels_full_name = join_parent_and_file_name_labels(parent, filename)
         self.blob_service.create_blob_from_path(container_name, blob_name, file_path )
@@ -110,7 +109,7 @@ class BlobClient:
         return self.get_labelled_blob(container_name, blob.name)
 
 
-    def list_all_labelled_blobs(self, container_name: str, num_results: int, expiry_hours:int = 1) -> [LabelledBlob]:
+    def list_all_labelled_blobs(self, container_name: str, num_results: int = None, expiry_hours:int = 1) -> [LabelledBlob]:
         """
         Returns an list of LabelledBlobs, each with a download url and labels array
         :param container_name: One of the container_names
@@ -120,7 +119,10 @@ class BlobClient:
         :param expiry_hours: How long the SAS token will last for
         :type: int
         """
-        blobs = self.blob_service.list_blobs(container_name, num_results= num_results * 2) # don't bother getting more than double the max
+        if(num_results == None):
+            blobs = self.blob_service.list_blobs(container_name)
+        else:
+            blobs = self.blob_service.list_blobs(container_name, num_results= num_results * 2) # don't bother getting more than double the max
         blobs = [blob for blob in blobs if not blob.name.endswith('.labels')] # remove labels
         res = []
         for blob in blobs:
