@@ -91,9 +91,13 @@ class BlobClient:
         return self.get_labelled_blob(container_name, blob_name, expiry_hours)
 
     def get_labelled_blob(self, container_name: str, blob_name: str, expiry_hours: int = 1)->LabelledBlob:
-        labels_full_name = join_blob_name_for_labels(blob_name)
-        labels_blob = self.blob_service.get_blob_to_text(container_name, labels_full_name)
-        labels = labels_blob.content.split('\n')
+        labels_blob_name = join_blob_name_for_labels(blob_name)
+        labels = []
+        if(self.blob_service.exists(container_name, labels_blob_name)):
+            labels_blob = self.blob_service.get_blob_to_text(container_name, labels_blob_name)
+            if labels_blob:
+                labels = labels_blob.content.split('\n')
+
         sas = self.blob_service.generate_blob_shared_access_signature( 
             container_name, blob_name, 
             permission=BlobPermissions.READ,

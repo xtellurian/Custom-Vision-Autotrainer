@@ -9,6 +9,7 @@ from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
 from autotrainer.custom_vision.platform import Platform, Flavour
 from autotrainer.blob.models.container import Container
+from autotrainer.blob.models.labelled_blob import LabelledBlob
 
 class AutotrainerCli:
     cv_key: str
@@ -18,7 +19,7 @@ class AutotrainerCli:
     def __init__(self):
         parser = argparse.ArgumentParser(
             description='Autotrainer tools',
-            usage='autotrainer [cv, upload, select] <options>')
+            usage='autotrainer [cv, catalogue, select] <options>')
 
         parser.add_argument('command', help='Subcommand to run')
         # parse_args defaults to [1:] for args, but you need to
@@ -76,19 +77,35 @@ class AutotrainerCli:
         else:
             print('Incorrect syntax')
 
-    def upload(self):
+    def catalogue(self):
         # define the CLI args
-        parser = argparse.ArgumentParser(description='Data tools')
-        parser.add_argument('-d', '--directory', required=True, help='The local directory containing the images')
-        parser.add_argument('-c','--container', type=Container, choices=list(Container), default=Container.train, required=True)
-        parser.add_argument('-l', '--labels', action='append', help='Label for the image', required=True) # can set multiple
-        parser.add_argument('--extension', help='Filter on file extension', default='')
-        parser.add_argument('--parent', help='Parent directory in Blob Storage', default=None)
-        args = parser.parse_args(sys.argv[2:])
+        parser = argparse.ArgumentParser(description='Data Catalogue tools')
+        parser.add_argument('--describe', action='store_true', help='Flag - Describe the data in the catalogue')
+        parser.add_argument('--upload', action='store_true', help='Flag - upload data')
+        args = parser.parse_args(sys.argv[2:3])
+        
+        if args.describe:
+            print('Querying catalogue...')
+            train_blobs = self.autotrainer.list_all_labelled_blobs(Container.train, None)
+            test_blobs = self.autotrainer.list_all_labelled_blobs(Container.test, None)
+            holdout_blobs = self.autotrainer.list_all_labelled_blobs(Container.holdout, None)
+            print('Training set has {} images'.format(len(train_blobs)))
+            print_describe_label_frequency(train_blobs)
+            print('Test set has {} images'.format(len(test_blobs)))
+            print_describe_label_frequency(test_blobs)
+            print('Holdout set has {} images'.format(len(holdout_blobs)))
+            print_describe_label_frequency(holdout_blobs)
 
-        image_paths = self.autotrainer.get_file_paths(args.directory, args.extension)
-        labelled_blobs = self.autotrainer.upload_images(args.container, image_paths, args.labels, args.parent )
-        print('Created {} labelled blobs'.format(len(labelled_blobs)))
+        elif args.upload:
+            parser.add_argument('-d', '--directory', help='The local directory containing the images', required=True)
+            parser.add_argument('-l', '--labels', action='append', help='Label for the image', required=True) # can set multiple
+            parser.add_argument('-c','--container', type=Container, choices=list(Container), default=Container.train)
+            parser.add_argument('--extension', help='Filter on file extension', default='')
+            parser.add_argument('--parent', help='Parent directory in Blob Storage', default=None)
+            args = parser.parse_args(sys.argv[2:])
+            image_paths = self.autotrainer.get_file_paths(args.directory, args.extension)
+            labelled_blobs = self.autotrainer.upload_images(args.container, image_paths, args.labels, args.parent )
+            print('Created {} labelled blobs'.format(len(labelled_blobs)))
         
     def select(self):
         # define the CLI args
@@ -102,10 +119,15 @@ class AutotrainerCli:
 
         res_freq = Counter([i.status for i in res])
         print('{} image create results'.format(len(res)))
+        print('label summary:')
         print(res_freq)
 
 
-
+def print_describe_label_frequency(labelled_blobs: [LabelledBlob]):
+    # print(set(labelled_blobs))
+    seq = [i.labels for i in labelled_blobs]
+    label_freq = Counter(x for xs in seq for x in set(xs))
+    print(label_freq)
 
 if __name__ == '__main__':
     AutotrainerCli()
