@@ -36,9 +36,9 @@ class Trainer:
                     print ("Training status: " + iteration.status)
                     time.sleep(1)
         except msrest.exceptions.HttpOperationError as err:
-            print(err.message)
-            print(err.inner_exception)
+            print('Http error from Custom Vision: {}'.format(err.message))
             print('Failed to train model - perhaps nothing has changed.')
+            iteration = iterations[0]
         
         return iteration
         
