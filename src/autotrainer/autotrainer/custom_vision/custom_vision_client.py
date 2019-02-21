@@ -18,8 +18,6 @@ class CustomVisionClient:
 
     def create_project(self, name: str, desc: str, domain: Domain, classification_type: ClassificationType)-> Project :
         domain_id = to_domain_id(domain)
-        print(domain)
-        print('domain id from to_domain_id : {}'.format(domain_id))
         project = self.training_client.create_project(
             name, 
             description=desc, 
