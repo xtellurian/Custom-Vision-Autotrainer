@@ -44,13 +44,20 @@ class AutotrainerCli:
         parser.add_argument('--domain', type=Domain, choices=list(Domain), default=Domain.GENERAL_CLASSIFICATION)
         parser.add_argument('--type', type=ClassificationType, choices=list(ClassificationType), default=ClassificationType.MULTICLASS)
         parser.add_argument('--project', help='Id of the custom vision project')
+        parser.add_argument('--train', help='Train a project. Returns iteration id', action='store_true')
+        parser.add_argument('--export', help='Export a project', action='store_true')
         args = parser.parse_args(sys.argv[2:])
         if(args.newproject):
             print('Creating new project: ' + args.newproject)
             project = self.autotrainer.custom_vision.create_project(args.newproject, 'Created by autotrainer CLI', args.domain, args.type )
             print(project.id)
+        elif args.train:
+            project = self.autotrainer.custom_vision.training_client.get_project(args.project)
+            print('Training project: {}'.format(project.name))
+            iteration = self.autotrainer.custom_vision.train_project_and_wait(project)
+            print(iteration.id)
         else:
-            print('do elsewise')
+            print('Incorrect syntax')
 
     def blob(self):
         # define the CLI args
