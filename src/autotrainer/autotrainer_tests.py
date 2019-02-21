@@ -21,12 +21,12 @@ class AutotrainerTests(unittest.TestCase):
     # def tearDown(self):
     #     containers = self.autotrainer.blob.blob_service.list_containers()
     #     for c in containers:
-    #         self.autotrainer.blob.blob_service.delete_container(c.name)
+    #         self.autotrainer.blob.blob_service.delete_container(c.value)
 
     def test_upload_files(self):
         image_paths = self.autotrainer.get_file_paths(rians_dir, 'png')
         for path in image_paths:
-            self.autotrainer.blob.add_data_from_path(Container.test.name, path )
+            self.autotrainer.blob.add_data_from_path(Container.test.value, path )
 
     def test_add_images_to_project(self):
         project = self.autotrainer.custom_vision.create_project(
@@ -36,6 +36,6 @@ class AutotrainerTests(unittest.TestCase):
             ClassificationType.MULTICLASS )
         image_paths = self.autotrainer.get_file_paths(rians_dir, 'png')
         for path in image_paths:
-            self.autotrainer.blob.add_data_from_path(Container.test.name, path, ['banana'])
+            self.autotrainer.blob.add_data_from_path(Container.test.value, path, ['banana'])
         
-        self.autotrainer.add_all_images_to_cv(Container.test, project.id)
+        self.autotrainer.add_all_images_to_cv(Container.test.value, project.id)

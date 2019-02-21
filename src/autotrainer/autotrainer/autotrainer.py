@@ -12,11 +12,15 @@ class Autotrainer:
         self.custom_vision = create_cv_client(cv_endpoint, cv_key)
         self.blob = create_blob_client_from_connection_string(storage_connection_string)
 
-    def get_file_paths(self, directory_path: str, ext: str)->[str]:
+    def get_file_paths(self, directory_path: str, ext: str = '')->[str]:
         return list_paths(directory_path, ext)
 
+    def upload_images(self, container: Container, image_paths: [str], labels: [str], parent: str = None):
+        for path in image_paths:
+            self.blob.add_data_from_path(container.value, path, labels, parent )
+
     def add_all_images_to_cv(self, container: Container, projectId: str):
-        labelled_blobs = self.blob.list_all_labelled_blobs(container.name)
+        labelled_blobs = self.blob.list_all_labelled_blobs(container.value)
         project = self.custom_vision.training_client.get_project(projectId)
         images = self.custom_vision.create_image_url_list(project, labelled_blobs)
         images = self.custom_vision.balance_images(images)

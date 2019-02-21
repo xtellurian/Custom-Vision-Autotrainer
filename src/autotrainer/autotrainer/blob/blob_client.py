@@ -46,8 +46,8 @@ class BlobClient:
         Creates the containers required in the storage account
         """
         for c in Container:
-            print('creating ' + c.name)
-            self.blob_service.create_container(c.name)
+            print('creating ' + c.value)
+            self.blob_service.create_container(c.value)
 
     def add_data_from_path(self, container_name: str, file_path: str, labels: [str] = [], parent: str = None):
         """
