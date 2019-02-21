@@ -16,14 +16,14 @@ class Exporter:
         print('there are {} existing exports'.format(len(exports)))
 
         try:
-            exported=self.training_client.export_iteration(project.id, iteration.id, platform.to_id(), flavour.to_id())
+            exported=self.training_client.export_iteration(project.id, iteration.id, platform.value, flavour.value)
             while (exported.status != 'Done'):
                 if(exported.status == 'Failed'):
                     print('export failed for iteration {}'.format(iteration.id))
                     break
                 else:
                     exports = self.training_client.get_exports(project.id, iteration.id)
-                    exported=next(ex for ex in exports if ex.platform == platform.to_id())
+                    exported=next(ex for ex in exports if ex.platform == platform.value)
                     print ("Exporting status: " + exported.status)
                     time.sleep(1)
         except msrest.exceptions.HttpOperationError as err:
@@ -31,4 +31,5 @@ class Exporter:
             print(err.inner_exception)
             print('iteration {} failed to export. Using older export'.format(iteration.id))
             exported=exports[0]
+        return exported
 

@@ -6,6 +6,7 @@ import time
 from autotrainer.autotrainer import Autotrainer
 from autotrainer.custom_vision.domain import Domain
 from autotrainer.custom_vision.classification_type import ClassificationType
+from autotrainer.custom_vision.platform import Platform, Flavour
 
 class AutotrainerCli:
     cv_key: str
@@ -46,6 +47,9 @@ class AutotrainerCli:
         parser.add_argument('--project', help='Id of the custom vision project')
         parser.add_argument('--train', help='Train a project. Returns iteration id', action='store_true')
         parser.add_argument('--export', help='Export a project', action='store_true')
+        parser.add_argument('--iteration', help='(optional) iteration to store')
+        parser.add_argument('--platform', help='Platform to export to', type=Platform, choices=list(Platform), default=Platform.DOCKER)
+        parser.add_argument('--flavour', help='Platform dependent Flavour', type=Flavour, choices=list(Flavour), default=Flavour.Linux)
         args = parser.parse_args(sys.argv[2:])
         if(args.newproject):
             print('Creating new project: ' + args.newproject)
@@ -56,6 +60,17 @@ class AutotrainerCli:
             print('Training project: {}'.format(project.name))
             iteration = self.autotrainer.custom_vision.train_project_and_wait(project)
             print(iteration.id)
+        elif args.export:
+            project = self.autotrainer.custom_vision.training_client.get_project(args.project)
+            if(args.iteration):
+                iteration = self.autotrainer.custom_vision.training_client.get_iteration(project.id, args.iteration)
+            else:
+                iteration = self.autotrainer.custom_vision.training_client.get_iterations(project.id)[0]
+            if not iteration.exportable:
+                print('Iteration is not exportable')
+                exit(1)
+            export = self.autotrainer.custom_vision.export_project(args.platform, args.flavour, project, iteration)
+            print(export.download_uri)
         else:
             print('Incorrect syntax')
 

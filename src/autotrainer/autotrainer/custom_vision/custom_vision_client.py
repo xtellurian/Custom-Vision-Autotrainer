@@ -1,12 +1,15 @@
 import math
 from azure.cognitiveservices.vision.customvision.training import CustomVisionTrainingClient
-from azure.cognitiveservices.vision.customvision.training.models import Project, Iteration, ImageUrlCreateEntry, Tag, ImageCreateResult
+from azure.cognitiveservices.vision.customvision.training.models import Project, Iteration, ImageUrlCreateEntry, Tag, ImageCreateResult, Export
 
 from autotrainer.custom_vision.domain import Domain, to_domain_id
 from autotrainer.custom_vision.classification_type import ClassificationType
 from autotrainer.custom_vision.labeller import Labeller
 from autotrainer.custom_vision.trainer import Trainer
 from autotrainer.custom_vision.balancer import Balancer
+from autotrainer.custom_vision.exporter import Exporter
+from autotrainer.custom_vision.platform import Platform, Flavour
+
 
 from autotrainer.blob.blob_client import LabelledBlob
 
@@ -58,6 +61,12 @@ class CustomVisionClient:
         trainer = Trainer(self.training_client)
         return trainer.train_and_wait(project)
 
+    def export_project(self, platform: Platform, flavour: Flavour, project: Project, iteration: Iteration )-> Export:
+        if iteration.exportable:
+            exporter = Exporter(self.training_client)
+            return exporter.export(platform, flavour, project, iteration )
+
+# factory method
 def create_cv_client(endpoint: str, key: str)-> CustomVisionClient:
     trainer = CustomVisionTrainingClient(key, endpoint)
     return CustomVisionClient(trainer)
