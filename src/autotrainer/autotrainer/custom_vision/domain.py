@@ -6,6 +6,10 @@ class Domain(Enum):
     GENERAL_OBJECT_DETECTION = 'general-obj-detection'
     FOOD_CLASSIFICATION = 'food'
 
+    def __str__(self):
+        return self.value
+
+
 def to_domain_id(domain: Domain)-> str:
     if domain == Domain.GENERAL_CLASSIFICATION:
         return "ee85a74c-405e-4adc-bb47-ffa8ca0c9f31"

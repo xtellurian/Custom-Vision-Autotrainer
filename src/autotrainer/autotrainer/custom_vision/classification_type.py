@@ -3,3 +3,6 @@ from enum import Enum
 class ClassificationType(Enum):
     MULTICLASS = 'Multiclass'
     MULTILABEL = 'Multilabel'
+
+    def __str__(self):
+        return self.value
