@@ -19,7 +19,7 @@ class Autotrainer:
     def list_all_labelled_blobs(self, container: Container, num_results: int = None):
         return self.blob.list_all_labelled_blobs(container.value, num_results)
 
-    def upload_images(self, container: Container, image_paths: [str], labels: [str], parent: str = None)-> [LabelledBlob]:
+    def upload_multiple_images(self, container: Container, image_paths: [str], labels: [str], parent: str = None)-> [LabelledBlob]:
         labelled_blobs = []
         for path in image_paths:
             labelled_blobs.append(self.blob.add_data_from_path(container.value, path, labels, parent ))

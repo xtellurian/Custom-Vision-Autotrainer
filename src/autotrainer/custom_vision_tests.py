@@ -10,30 +10,35 @@ from autotrainer.custom_vision.custom_vision_client import CustomVisionClient
 from autotrainer.custom_vision.domain import Domain, to_domain_id
 from autotrainer.custom_vision.classification_type import ClassificationType
 
-CVTK=os.environ['CUSTOMVISIONTRAININGKEY']
-training_client = CustomVisionTrainingClient(CVTK, 'https://australiaeast.api.cognitive.microsoft.com')
+CVTK=os.environ['CV_TRAINING_KEY']
+endpoint=os.environ['CV_ENDPOINT']
+training_client = CustomVisionTrainingClient(CVTK, endpoint)
 
 class CustomVisionTests(unittest.TestCase):
-    project: Project
-    def setUp(self):
-        self.project = training_client.create_project('unit-tests')
+    projects: [Project]
     
     def tearDown(self):
-        training_client.delete_project(self.project.id)
+        for project in self.projects:
+            training_client.delete_project(project.id)
+            self.projects.remove(project)
+
+    def setUp(self):
+        self.projects = []
 
     def test_create_project(self):
         client = CustomVisionClient(training_client)
         project = client.create_project('test', 'test', Domain.GENERAL_CLASSIFICATION, ClassificationType.MULTICLASS)
+        self.projects.append(project) # add to delete later
         self.assertIsNotNone(project)
         self.assertIsInstance(project, Project)
         self.assertIn('test', project.name)
         projects = training_client.get_projects()
         self.assertIn(project, projects)
-        training_client.delete_project(project.id)
 
     def test_create_project_compact_multilabel(self):
         client = CustomVisionClient(training_client)
         project = client.create_project('test', 'test', Domain.GENERAL_CLASSIFICATION_COMPACT, ClassificationType.MULTILABEL)
+        self.projects.append(project)
         self.assertIsNotNone(project)
         self.assertIsInstance(project, Project)
         self.assertIn('test', project.name)
@@ -42,12 +47,13 @@ class CustomVisionTests(unittest.TestCase):
         
         projects = training_client.get_projects()
         self.assertIn(project, projects)
-        training_client.delete_project(project.id)
 
     def test_create_image_url_list(self):
         client = CustomVisionClient(training_client)
+        project = client.create_project('test','test', Domain.GENERAL_CLASSIFICATION, ClassificationType.MULTICLASS)
+        self.projects.append(project) # add to delete later
         labelled_blobs = [LabelledBlob('url1', ['tomato','potato']), LabelledBlob('url2', ['banana','fig'])]
-        image_urls = client.create_image_url_list(self.project, labelled_blobs )
+        image_urls = client.create_image_url_list(project, labelled_blobs )
         for labelled_blob in labelled_blobs:
             self.assertIn(labelled_blob.download_url, [i.url for i in image_urls])
         for image in image_urls:
