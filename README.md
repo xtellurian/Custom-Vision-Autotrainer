@@ -102,6 +102,8 @@ optional arguments:
 
 # Test
 
+Autotrainer uses [nose](https://nose.readthedocs.io/en/latest/)
+
 First, run Azurite for local blob storage testing:
 
 ```sh
@@ -121,4 +123,4 @@ Ran 12 tests in 7.088s
 OK
 ``` 
 
-> NOTE: Some tests require access to a *real* Azure Storage account and Custom Vision service.
+> NOTE: Some tests require access to a *real* Azure Storage account and Custom Vision service. See the environment variable section above.
