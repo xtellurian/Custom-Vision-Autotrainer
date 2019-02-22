@@ -3,6 +3,8 @@ An autotraining tool for customvision.ai using Azure Blob Storage and Azure Pipe
 
 [![Build Status](https://dev.azure.com/aussiedevcrew/Custom-Vision-Autotrainer/_apis/build/status/xtellurian.Custom-Vision-Autotrainer?branchName=master)](https://dev.azure.com/aussiedevcrew/Custom-Vision-Autotrainer/_build/latest?definitionId=6&branchName=master)
 
+# THIS PROJECT HAS MOVED TO [MICROSOFT/CUSTOM-VISION-AUTOTRAINER](https://github.com/microsoft/Custom-Vision-Autotrainer)
+
 ## Features
 
  * Data Catalogue
