@@ -1,6 +1,9 @@
 pool:
   vmImage: ubuntu-16.04
 
+variables:
+  - group: autotrainer_build_vars # name of variable group in Azure Pipeline
+
 trigger:
   batch: true
   branches:
@@ -28,8 +31,8 @@ steps:
   workingDirectory: src/autotrainer
   displayName: 'Install dev dependencies'
 
-- script: docker-compose -d up
-  workingDirectory: src
+- script: docker-compose up -d
+  workingDirectory: src/
   displayName: 'docker-compose: Start dependencies'
 
 - script: nosetests

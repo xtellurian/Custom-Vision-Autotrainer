@@ -104,7 +104,7 @@ First, run Azurite for local blob storage testing:
 
 ```sh
 $ cd src/
-$ docker-compose -d up
+$ docker-compose up -d
 ```
 
 Then you can run the tests.
