@@ -11,7 +11,8 @@ conn_string=os.environ['STORAGE_ACCOUNT_CONNECTION_STRING']
 CVTK=os.environ['CV_TRAINING_KEY']
 cv_endpoint=os.environ['CV_ENDPOINT']
 
-rians_dir = "C:/data/scotts-data/Capture3/banana_organic"
+dog_dir = "../../sample_images/dog"
+cat_dir = "../../sample_images/cat"
 
 class AutotrainerTests(unittest.TestCase):
     autotrainer: Autotrainer
@@ -28,8 +29,8 @@ class AutotrainerTests(unittest.TestCase):
             self.projects.remove(project)
 
     def test_upload_files(self):
-        image_paths = self.autotrainer.get_file_paths(rians_dir, 'png')
-        self.autotrainer.upload_multiple_images(Container.test, image_paths, ['test'] )
+        image_paths = self.autotrainer.get_file_paths(dog_dir, 'jpg')
+        self.autotrainer.upload_multiple_images(Container.test, image_paths, ['dog'] )
 
     def test_add_images_to_project(self):
         project = self.autotrainer.custom_vision.create_project(
@@ -38,7 +39,7 @@ class AutotrainerTests(unittest.TestCase):
             Domain.GENERAL_CLASSIFICATION, 
             ClassificationType.MULTICLASS )
         self.projects.append(project) # save to delete later
-        image_paths = self.autotrainer.get_file_paths(rians_dir, 'png')
-        self.autotrainer.upload_multiple_images(Container.test, image_paths, ['banana'])
+        image_paths = self.autotrainer.get_file_paths(cat_dir, 'jpg')
+        self.autotrainer.upload_multiple_images(Container.test, image_paths, ['cat'])
         
         self.autotrainer.add_all_images_to_cv(Container.test, project.id)

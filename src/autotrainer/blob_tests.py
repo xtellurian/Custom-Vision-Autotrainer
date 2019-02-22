@@ -8,9 +8,9 @@ from autotrainer.blob.models.container import Container
 
 conn_string='DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1;'
 block_blob_service = BlockBlobService(connection_string=conn_string)
-test_file_name = 'sample.jpg'
-test_file = os.path.join( os.path.dirname(os.path.abspath(__file__)), test_file_name)
-
+test_file_name = 'dog1.jpg'
+test_file = os.path.join( os.path.dirname(os.path.abspath(__file__)), ".." , "..", "sample_images", "dog", test_file_name)
+print(test_file)
 
 class InitBlobTests(unittest.TestCase):
 
@@ -46,8 +46,8 @@ class BlobTests(unittest.TestCase):
 
         blobs = block_blob_service.list_blobs(self.test_container)
         print([c.name for c in blobs.items])
-        self.assertIn(parent + '/sample.jpg', [c.name for c in blobs.items])
-        self.assertIn(parent + '/sample.jpg.labels', [c.name for c in blobs.items])
+        self.assertIn(parent + '/dog1.jpg', [c.name for c in blobs.items])
+        self.assertIn(parent + '/dog1.jpg.labels', [c.name for c in blobs.items])
 
     def test_get_labelled_blob(self):
         blob_client=BlobClient(block_blob_service)
