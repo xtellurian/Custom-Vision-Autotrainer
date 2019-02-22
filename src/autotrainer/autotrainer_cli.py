@@ -42,7 +42,8 @@ class AutotrainerCli:
     def cv(self):
         
         parser = argparse.ArgumentParser(
-            description='Custom Vision tools')
+            description='Custom Vision tools',
+            usage= 'autotrainer cv <options>')
         # prefixing the argument with -- means it's optional
         parser.add_argument('--newproject', help='Name of the new project. Returns project id')
         parser.add_argument('--domain', type=Domain, choices=list(Domain), default=Domain.GENERAL_CLASSIFICATION)
@@ -79,12 +80,16 @@ class AutotrainerCli:
 
     def catalogue(self):
         # define the CLI args
-        parser = argparse.ArgumentParser(description='Data Catalogue tools')
-        parser.add_argument('--describe', action='store_true', help='Flag - Describe the data in the catalogue')
-        parser.add_argument('--upload', action='store_true', help='Flag - upload data')
+        parser = argparse.ArgumentParser(
+            description='Data Catalogue tools',
+            usage='autotrainer catalogue <options>')
+        parser.add_argument('command', help='Catalogue options',type=str, choices=['describe', 'upload'] )
         args = parser.parse_args(sys.argv[2:3])
         
-        if args.describe:
+        if args.command == 'describe':
+            parser = argparse.ArgumentParser(
+                description='Data Catalogue description',
+                usage='autotrainer catalogue describe')
             print('Querying catalogue...')
             train_blobs = self.autotrainer.list_all_labelled_blobs(Container.train, None)
             test_blobs = self.autotrainer.list_all_labelled_blobs(Container.test, None)
@@ -96,7 +101,10 @@ class AutotrainerCli:
             print('Holdout set has {} images'.format(len(holdout_blobs)))
             print_describe_label_frequency(holdout_blobs)
 
-        elif args.upload:
+        elif args.command == 'upload':
+            parser = argparse.ArgumentParser(
+                description='Upload to the data catalogue (blob storage)',
+                usage='autotrainer catalogue upload <options>')
             parser.add_argument('-d', '--directory', help='The local directory containing the images', required=True)
             parser.add_argument('-l', '--labels', action='append', help='Label for the image', required=True) # can set multiple
             parser.add_argument('-c','--container', type=Container, choices=list(Container), default=Container.train)
@@ -104,12 +112,14 @@ class AutotrainerCli:
             parser.add_argument('--parent', help='Parent directory in Blob Storage', default=None)
             args = parser.parse_args(sys.argv[2:])
             image_paths = self.autotrainer.get_file_paths(args.directory, args.extension)
-            labelled_blobs = self.autotrainer.upload_images(args.container, image_paths, args.labels, args.parent )
+            labelled_blobs = self.autotrainer.upload_multiple_images(args.container, image_paths, args.labels, args.parent )
             print('Created {} labelled blobs'.format(len(labelled_blobs)))
         
     def select(self):
         # define the CLI args
-        parser = argparse.ArgumentParser(description='Select data from blobs and add to Custom Vision')
+        parser = argparse.ArgumentParser(
+            description='Select data from blobs and add to Custom Vision',
+            usage='autotrainer select <options>')
         parser.add_argument('-c','--container', type=Container, choices=list(Container), default=Container.train)
         parser.add_argument('--num', type=int, help='Number to add', required=True)
         parser.add_argument('--project', help='Id of the custom vision project', required=True)

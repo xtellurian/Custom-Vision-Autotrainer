@@ -43,11 +43,80 @@ Select images from your training set, and push them to a Custom Vision project.
 
 Automate the training and exporting of models.
 
+# Quickstart
 
-# Tests
+## Docker
 
-Run tests with
-
+```sh
+docker run -it -e "CV_ENDPOINT=https://southcentralus.api.cognitive.microsoft.com" -e "CV_TRAINING_KEY=your_key" -e "STORAGE_ACCOUNT_CONNECTION_STRING=your_connection_string" flanagan89/custom-vision-autotrainer -h
 ```
-nosetests
+
+## Configuration
+
+Autotrainer requires three environment variables:
+
+ * `CV_ENDPOINT` : The location of your custom vision service, e.g. https://southcentralus.api.cognitive.microsoft.com
+ * `CV_TRAINING_KEY` : Your custom vision training key
+ * `STORAGE_ACCOUNT_CONNECTION_STRING` : Connection string to an Azure Storage Account
+
+# Build
+
+## Setup environment and install dependencies
+
+I recommend using [Mini Conda](https://conda.io/en/latest/miniconda.html) to manage your python environment. Download and install miniconda, then in a shell:
+
+1. Create a conda environment: `conda create -n customvisionautotrainer python=3.6`
+2. Activate the environment: `activate customvisionautotrainer`. 
+3. Install runtime dependencies: `pip install -r src/autotrainer/requirements.txt`
+4. Install developer dependencies: `pip install -r src/autotrainer/requirements-dev.txt`
+5. Configure environment variables (see above) 
+
+## Run the Autotrainer CLI
+
+```sh
+$ cd src/autotrainer
+$ python ./autotrainer_cli.py -h
+usage: autotrainer [cv, catalogue, select] <options>
+
+Autotrainer tools
+
+positional arguments:
+  command     Subcommand to run
+
+optional arguments:
+  -h, --help  show this help message and exit
+
+$ python ./autotrainer_cli.py catalogue -h
+usage: autotrainer catalogue <options>
+
+Data Catalogue tools
+
+positional arguments:
+  {describe,upload}  Catalogue options
+
+optional arguments:
+  -h, --help         show this help message and exit
+```
+
+# Test
+
+First, run Azurite for local blob storage testing:
+
+```sh
+$ cd src/
+$ docker-compose -d up
+```
+
+Then you can run the tests.
+
+```sh
+$ cd src/autotrainer
+$ nosetests
+............
+----------------------------------------------------------------------
+Ran 12 tests in 7.088s
+
+OK
 ``` 
+
+> NOTE: Some tests require access to a *real* Azure Storage account and Custom Vision service.
