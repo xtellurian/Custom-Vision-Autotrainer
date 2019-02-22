@@ -8,7 +8,7 @@ trigger:
     - master
   paths:
     include:
-    - src/
+    - src/*
     - azure-pipelines.yml
 
 steps:
